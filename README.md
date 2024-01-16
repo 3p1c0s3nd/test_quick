@@ -12,11 +12,17 @@ Se creo el archivo jwt_authentication que permite extraer el valor token jwt, ac
 ## Requisitos
 
 Python 3.12.0
+
 Django
+
 Django Rest Framework
+
 psycopg2
+
 pyjwt
+
 hashlib
+
 csv
 
 
