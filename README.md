@@ -27,16 +27,24 @@ csv
 
 
 
+
 ## Instalación
 
 git clone  https://github.com/3p1c0s3nd/test_quick.git
+
 cd test_quick
+
 pip install -r requirements.txt
+
 python manage.py runserver
 
 
+
+
 ## Configura la Base de datos
+
 python manage.py makemigration
+
 python manage.py migrate
 
 
