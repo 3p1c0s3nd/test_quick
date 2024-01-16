@@ -34,6 +34,14 @@ class ProductListView(APIView):
         products = Product.objects.all()
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
+    
+    def post(self, request):
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -42,8 +50,16 @@ class BillListView(APIView):
     def get(self, request):
         query = "SELECT * FROM core_bill"
         raw_queryset = Bill.objects.raw(query)
-        results = [{'client': obj.client, 'company_name': obj.company_name, 'nit': obj.nit, 'code': obj.code} for obj in raw_queryset]
+        results = [{'client_id': obj.client_id, 'company_name': obj.company_name, 'nit': obj.nit, 'code': obj.code} for obj in raw_queryset]
         return JsonResponse({'results': results})
+    
+    def post(self, request):
+        serializer = BillSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
