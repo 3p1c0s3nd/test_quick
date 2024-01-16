@@ -18,9 +18,13 @@ from .jwt_authentication import JWTAuthentication
 
 class ClientListView(APIView):
     def get(self, request):
-        clients = Client.objects.all()
-        serializer = ClientSerializer(clients, many=True)
-        return Response(serializer.data)
+        #clients = Client.objects.all()
+        #serializer = ClientSerializer(clients, many=True)
+        #return Response(serializer.data)
+        query = "SELECT * FROM core_client"
+        raw_queryset = Client.objects.raw(query)
+        results = [{'document': obj.document, 'email': obj.email, 'first_name': obj.first_name, 'last_name': obj.last_name} for obj in raw_queryset]
+        return JsonResponse({'results': results})
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -36,9 +40,10 @@ class ProductListView(APIView):
 
 class BillListView(APIView):
     def get(self, request):
-        bills = Bill.objects.all()
-        serializer = BillSerializer(bills, many=True)
-        return Response(serializer.data)
+        query = "SELECT * FROM core_bill"
+        raw_queryset = Bill.objects.raw(query)
+        results = [{'client': obj.client, 'company_name': obj.company_name, 'nit': obj.nit, 'code': obj.code} for obj in raw_queryset]
+        return JsonResponse({'results': results})
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
