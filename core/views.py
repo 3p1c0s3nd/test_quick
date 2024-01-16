@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 from django.conf import settings
 from django.http import HttpResponse
+from django.db import connection
 
 from .models import Client, Product, Bill
 from .serializers import ClientSerializer, ProductSerializer, BillSerializer, ClientLoginSerializer
@@ -54,12 +55,16 @@ class BillListView(APIView):
         return JsonResponse({'results': results})
     
     def post(self, request):
-        serializer = BillSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        #serializer = BillSerializer(data=request.data)
+        #if serializer.is_valid():
+            #serializer.save()
+            #return Response(serializer.data, status=status.HTTP_201_CREATED)
+        #return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        query = "INSERT INTO core_bill (client_id, company_name, nit, code) VALUES (%s, %s, %s, %s)"
+        values = (request.data['client_id'], request.data['company_name'], request.data['nit'], request.data['code'])
+        with connection.cursor() as cursor:
+            cursor.execute(query, values)
+        return Response({'message': 'Factura registrada exitosamente'})
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -69,15 +74,19 @@ class UserRegistrationView(APIView):
     def post(self, request):
         hashed_password = hashlib.sha256(request.data['password'].encode()).hexdigest()
         request.data['password'] = hashed_password
-        serializer = ClientSerializer(data=request.data)
-        if serializer.is_valid():
-            client = serializer.save()
-            token_payload = {'user_id': client.id}
-            token = jwt.encode(token_payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
-            
-            return Response({'message': 'Cliente registrado exitosamente', 'token': token}, status=status.HTTP_201_CREATED)
+        query = "INSERT INTO core_client (document, first_name, last_name, email, password) VALUES (%s, %s, %s, %s, %s)"
+        values = (request.data['document'], request.data['first_name'], request.data['last_name'], request.data['email'], hashed_password)
+        with connection.cursor() as cursor:
+            cursor.execute(query, values)
+        return Response({'message': 'Cliente registrado exitosamente'}, status=status.HTTP_201_CREATED)
+        #serializer = ClientSerializer(data=request.data)
+        #if serializer.is_valid():
+            #client = serializer.save()
+            #token_payload = {'user_id': client.id}
+            #token = jwt.encode(token_payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM) 
+            #return Response({'message': 'Cliente registrado exitosamente', 'token': token}, status=status.HTTP_201_CREATED)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        #return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLoginView(APIView):
