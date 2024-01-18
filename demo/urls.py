@@ -16,14 +16,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from core.views import ClientListView, ProductListView, BillListView, UserRegistrationView, UserLoginView, download_clients_csv, upload_clients_csv
+from core.views import ClientListView, ProductListView, BillListView, UserRegistrationView, UserLoginView, download_clients_csv, upload_clients_csv,ClientOneView,ProductOneView, BillOneView
 
 
 urlpatterns = [
     #path('admin/', admin.site.urls),
     path('clients/', ClientListView.as_view(), name='client-list'),
+    path('clients/<int:pk>/', ClientOneView.as_view(), name='client-one'),
     path('products/', ProductListView.as_view(), name='product-list'),
+    path('products/<int:pk>/', ProductOneView.as_view(), name='product-one'),
     path('bills/', BillListView.as_view(), name='bill-list'),
+    path('bills/<int:pk>/', BillOneView.as_view(), name='bill-one'),
     path('register/', UserRegistrationView.as_view(), name='user-register'),
     path('login/', UserLoginView.as_view(), name='user-login'),
     path('download-clients-csv/', download_clients_csv, name='download-clients-csv'),

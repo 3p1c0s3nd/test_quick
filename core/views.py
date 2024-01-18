@@ -16,6 +16,26 @@ from .jwt_authentication import JWTAuthentication
 
 
 
+class ClientOneView(APIView):
+    def get(self, request, pk):
+        client = Client.objects.get(pk=pk)
+        serializer = ClientSerializer(client)
+        return Response(serializer.data)
+    
+    def put(self, request, pk):
+        client = Client.objects.get(pk=pk)
+        if request.data['password']:
+            hashed_password = hashlib.sha256(request.data['password'].encode()).hexdigest()
+            request.data['password'] = hashed_password
+        serializer = ClientSerializer(client, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
 
 class ClientListView(APIView):
     def get(self, request):
@@ -26,9 +46,29 @@ class ClientListView(APIView):
         raw_queryset = Client.objects.raw(query)
         results = [{'document': obj.document, 'email': obj.email, 'first_name': obj.first_name, 'last_name': obj.last_name} for obj in raw_queryset]
         return JsonResponse({'results': results})
+    
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+
+
+
+class ProductOneView(APIView):
+    def get(self, request, pk):
+        product = Product.objects.get(pk=pk)
+        serializer = ProductSerializer(product)
+        return Response(serializer.data)
+    
+    def put(self, request, pk):
+        product = Product.objects.get(pk=pk)
+        serializer = ProductSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
 class ProductListView(APIView):
     def get(self, request):
@@ -46,6 +86,24 @@ class ProductListView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+
+
+class BillOneView(APIView):
+    def get(self, request, pk):
+        bill = Bill.objects.get(pk=pk)
+        serializer = BillSerializer(bill)
+        return Response(serializer.data)
+    
+    def put(self, request, pk):
+        bill = Bill.objects.get(pk=pk)
+        serializer = BillSerializer(bill, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
 class BillListView(APIView):
     def get(self, request):
@@ -108,7 +166,6 @@ class UserLoginView(APIView):
             # Si las credenciales son válidas, generamos tokens de acceso y actualización
             token_payload = {'user_id': client.id}
             token = jwt.encode(token_payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
-
 
             return Response({'message': 'Inicio de sesión exitoso', 'token': token}, status=status.HTTP_200_OK)
         else:
